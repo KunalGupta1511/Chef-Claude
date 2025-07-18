@@ -6,18 +6,41 @@ import { getRecipeFromMistral } from "../ai"
 export default function () {
     const [ingredients, setIngredients] = React.useState([]);
     const [recipe, setRecipe] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const loadingSection = React.useRef(null);
     const recipeSection = React.useRef(null);
+    const noOfIngredients = React.useRef(null);
 
     useEffect(() => {
         if (recipe !== "" && recipeSection.current !== null) {
-            // recipeSection.current.scrollIntoView({behaviour : "smooth"});
+            const yCoord = recipeSection.current.getBoundingClientRect().top + window.scrollY - 80
+            window.scroll({
+                top: yCoord,
+                behavior: "smooth"
+            })
+        }
+        if (ingredients.length <= 3 && recipe === "") {
+            const yCoord = noOfIngredients.current.getBoundingClientRect().top + window.scrollY
+            window.scroll({
+                top: yCoord,
+                behavior: "smooth"
+            })
+        }
+        else if (ingredients.length >= 4 && recipe === "") {
             const yCoord = recipeSection.current.getBoundingClientRect().top + window.scrollY
             window.scroll({
                 top: yCoord,
                 behavior: "smooth"
             })
         }
-    }, [recipe])
+        if (loading) {
+            const yCoord = loadingSection.current.getBoundingClientRect().top + window.scrollY
+            window.scroll({
+                top: yCoord,
+                behavior: "smooth"
+            })
+        }
+    }, [recipe, ingredients, loading])
 
     function handleSubmit(formData) {
         const newIngredient = formData.get("ingredient")
@@ -25,8 +48,16 @@ export default function () {
     }
 
     async function handleClick() {
+        setLoading(true);
         const recipeMarkdown = await getRecipeFromMistral(ingredients);
         setRecipe(recipeMarkdown);
+        setLoading(false);
+    }
+
+    function removeIngredient(index) {
+        const newIngredientList = ingredients.filter((item) => item !== ingredients[index]);
+        setIngredients(newIngredientList);
+        setRecipe("");
     }
 
     return <>
@@ -50,15 +81,33 @@ export default function () {
             <form className="add-ingredient-form" action={handleSubmit}>
                 <input
                     type="text"
+                    list="ingredient-list"
                     aria-label="Add ingredients"
-                    placeholder="e.g. oregano"
+                    placeholder="e.g. onion"
                     name="ingredient"
                 />
+                <datalist id="ingredient-list">
+                    <option value="Tomato"></option>
+                    <option value="Potato"></option>
+                    <option value="Paneer"></option>
+                    <option value="All main spices"></option>
+                    <option value="Onion"></option>
+                    <option value="Garlic"></option>
+                    <option value="Chicken"></option>
+                </datalist>
                 <button>Add ingredient</button>
             </form>
 
-            {ingredients.length > 0 && <IngredientsList ref={recipeSection} listOfIngredients={ingredients} onClick={handleClick} />}
-            {recipe && <ClaudeRecipe generatedRecipe={recipe} />}
+            {ingredients.length > 0 &&
+                <IngredientsList
+                    ref={recipeSection}
+                    listOfIngredients={ingredients}
+                    onClick={handleClick}
+                    removeIngredient={removeIngredient}
+                    recipe = {recipe}
+                />}
+            {ingredients.length <= 3 && <h4 ref={noOfIngredients}>Add {4 - ingredients.length} more ingredients to start making a recipe</h4>}
+            {(recipe !== "" || loading) && <ClaudeRecipe generatedRecipe={recipe} loading={loading} ref={loadingSection} />}
         </main>
     </>
 }

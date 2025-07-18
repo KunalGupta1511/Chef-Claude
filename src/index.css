@@ -12,6 +12,8 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: sticky;
+    top: 0;
     gap: 11px;
     height: 80px;
     background-color: white;
@@ -28,6 +30,10 @@ header>h1 {
 
 main {
     padding: 30px 30px 10px;
+}
+
+h4 {
+    text-align: center;
 }
 
 .add-ingredient-form {
@@ -75,9 +81,23 @@ ul.ingredients-list {
     margin-bottom: 48px;
 }
 
-ul.ingredients-list>li {
+ul.ingredients-list>.item {
     color: #475467;
     line-height: 28px;
+    padding: 0.3rem;
+}
+
+.item {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.item>img {
+    width: 17px;
+    height: auto;
+    max-height: 15px;
+    cursor: pointer;
 }
 
 .get-recipe-container {
@@ -174,5 +194,54 @@ ul.ingredients-list>li {
 
     .description .sub-heading {
         font-size: 1.1rem;
+    }
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    height: 450px;
+    margin: 2rem 0;
+    background: linear-gradient(135deg, #1f1f1f, #3a3a3a);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.loading img {
+    width: 300px;
+    height: auto;
+    min-height: 150px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.shimmer-text {
+    position: relative;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: black;
+    background: linear-gradient(90deg,
+            #d3d3d392 0%,
+            #ffffff 40%,
+            #d3d3d392 60%);
+    background-size: 200% 10%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 1.5s infinite;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
     }
 }
