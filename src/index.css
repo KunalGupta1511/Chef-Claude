@@ -38,13 +38,20 @@ h4 {
 
 .add-ingredient-form {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     gap: 12px;
-    height: 38px;
+    height: fit-content;
     margin-top: 2rem;
 }
 
-.add-ingredient-form>input {
+.ingredient-input , .mood-input{
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.ingredient-input>input,.mood-input>input {
     border-radius: 6px;
     border: 1px solid #D1D5DB;
     padding: 9px 13px;
@@ -54,7 +61,7 @@ h4 {
     max-width: 400px;
 }
 
-.add-ingredient-form>button {
+.ingredient-input>button ,.mood-input>button {
     font-family: Inter, sans-serif;
     border-radius: 6px;
     border: none;
@@ -63,25 +70,27 @@ h4 {
     width: 150px;
     font-size: 0.875rem;
     font-weight: 500;
+    cursor: pointer;
 }
 
-.add-ingredient-form>button::before {
+.ingredient-input>button::before, .mood-input>button::before {
     content: "+";
     margin-right: 5px;
 }
 
-.ingredients-container {
+.ingredients-mood-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-ul.ingredients-list {
-    margin-bottom: 48px;
+.box{
+    display: flex;
+    gap: 50px;
 }
 
-ul.ingredients-list>.item {
+ul.ingredients-list>.item , ul.mood-list>.item {
     color: #475467;
     line-height: 28px;
     padding: 0.3rem;

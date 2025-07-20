@@ -1,10 +1,11 @@
 import React, { useEffect } from "react"
-import IngredientsList from "./IngredientsList";
+import IngredientsList from "./IngredientsMoodList";
 import ClaudeRecipe from "./ClaudeRecipe";
-import { getRecipeFromMistral } from "../ai"
+import { getRecipeFromIngredients, getRecipeFromMood, getRecipeFromMoodAndIngredients } from "../ai"
 
 export default function () {
     const [ingredients, setIngredients] = React.useState([]);
+    const [mood, setMood] = React.useState([]);
     const [recipe, setRecipe] = React.useState("");
     const [loading, setLoading] = React.useState(false);
     const loadingSection = React.useRef(null);
@@ -40,16 +41,31 @@ export default function () {
                 behavior: "smooth"
             })
         }
-    }, [recipe, ingredients, loading])
+    }, [recipe, ingredients, loading, mood])
 
     function handleSubmit(formData) {
-        const newIngredient = formData.get("ingredient")
-        setIngredients(prevIngredients => [...prevIngredients, newIngredient]);
+        const newMood = formData.get("mood");
+        if (newMood !== "") {
+            setMood(prevMood => [...prevMood, newMood]);
+        }
+        const newIngredient = formData.get("ingredient");
+        if (newIngredient !== "") {
+            setIngredients(prevIngredients => [...prevIngredients, newIngredient]);
+        }
     }
 
     async function handleClick() {
         setLoading(true);
-        const recipeMarkdown = await getRecipeFromMistral(ingredients);
+        let recipeMarkdown = "";
+        if (mood.length === 0) {
+            recipeMarkdown = await getRecipeFromIngredients(ingredients);
+        }
+        else if (ingredients.length === 0) {
+            recipeMarkdown = await getRecipeFromMood(mood);
+        }
+        else {
+            recipeMarkdown = await getRecipeFromMoodAndIngredients(mood, ingredients);
+        }
         setRecipe(recipeMarkdown);
         setLoading(false);
     }
@@ -57,6 +73,12 @@ export default function () {
     function removeIngredient(index) {
         const newIngredientList = ingredients.filter((item) => item !== ingredients[index]);
         setIngredients(newIngredientList);
+        setRecipe("");
+    }
+
+    function removeMood(index) {
+        const newMood = mood.filter((item) => item !== mood[index]);
+        setMood(newMood);
         setRecipe("");
     }
 
@@ -79,34 +101,76 @@ export default function () {
                 </div>
             </section>
             <form className="add-ingredient-form" action={handleSubmit}>
-                <input
-                    type="text"
-                    list="ingredient-list"
-                    aria-label="Add ingredients"
-                    placeholder="e.g. onion"
-                    name="ingredient"
-                />
-                <datalist id="ingredient-list">
-                    <option value="Tomato"></option>
-                    <option value="Potato"></option>
-                    <option value="Paneer"></option>
-                    <option value="All main spices"></option>
-                    <option value="Onion"></option>
-                    <option value="Garlic"></option>
-                    <option value="Chicken"></option>
-                </datalist>
-                <button>Add ingredient</button>
+                <div className="ingredient-input">
+                    <input
+                        type="text"
+                        list="ingredient-list"
+                        aria-label="Add ingredients"
+                        placeholder="e.g. onion"
+                        name="ingredient"
+                    />
+                    <datalist id="ingredient-list">
+                        <option value="Tomato"></option>
+                        <option value="Potato"></option>
+                        <option value="Paneer"></option>
+                        <option value="All main spices"></option>
+                        <option value="Onion"></option>
+                        <option value="Garlic"></option>
+                        <option value="Chicken"></option>
+                    </datalist>
+                    <button>Add ingredient</button>
+                </div>
+
+                <div className="mood-input">
+                    <input
+                        type="text"
+                        list="moods"
+                        aria-label="What's your mood"
+                        placeholder="e.g. Feeling lazy"
+                        name="mood"
+                    />
+                    <datalist id="moods">
+                        <option value="Happy"></option>
+                        <option value="Sad"></option>
+                        <option value="Lazy"></option>
+                        <option value="Adventurous"></option>
+                        <option value="Romantic"></option>
+                        <option value="Tired"></option>
+                        <option value="Energetic"></option>
+                    </datalist>
+                    <button>Add mood</button>
+                </div>
             </form>
 
-            {ingredients.length > 0 &&
+            {mood.length > 0 ?
+                <h4 ref={noOfIngredients}>
+                    Get a recipe now {ingredients.length < 4 && `or Add ${4 - ingredients.length} ingredients`}
+                </h4>
+                : (ingredients.length <= 3 && ingredients.length > 0) ?
+                    <h4 ref={noOfIngredients}>
+                        Add {4 - ingredients.length} more ingredients to get a recipe now
+                    </h4>
+                    : ingredients.length >= 4 ?
+                        <h4 ref={noOfIngredients}>
+                            Click "Get a recipe" now
+                        </h4> :
+                        <h4 ref={noOfIngredients}>
+
+                        </h4>
+            }
+
+            {(ingredients.length > 0 || mood.length > 0) &&
                 <IngredientsList
                     ref={recipeSection}
                     listOfIngredients={ingredients}
+                    listOfMoods={mood}
                     onClick={handleClick}
                     removeIngredient={removeIngredient}
-                    recipe = {recipe}
-                />}
-            {ingredients.length <= 3 && <h4 ref={noOfIngredients}>Add {4 - ingredients.length} more ingredients to start making a recipe</h4>}
+                    removeMood={removeMood}
+                    recipe={recipe}
+                />
+            }
+
             {(recipe !== "" || loading) && <ClaudeRecipe generatedRecipe={recipe} loading={loading} ref={loadingSection} />}
         </main>
     </>
