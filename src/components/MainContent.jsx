@@ -1,11 +1,12 @@
 import React, { useEffect } from "react"
-import IngredientsList from "./IngredientsMoodList";
+import IngredientsList from "./InputList";
 import ClaudeRecipe from "./ClaudeRecipe";
-import { getRecipeFromIngredients, getRecipeFromMood, getRecipeFromMoodAndIngredients } from "../ai"
+import { getRecipeFromIngredients, getRecipeFromMood, getRecipeFromMoodAndIngredients, getRecipeFromCuisine } from "../getRecipeFromAI"
 
 export default function () {
     const [ingredients, setIngredients] = React.useState([]);
     const [mood, setMood] = React.useState([]);
+    const [cuisine, setCuisine] = React.useState("");
     const [recipe, setRecipe] = React.useState("");
     const [loading, setLoading] = React.useState(false);
     const loadingSection = React.useRef(null);
@@ -41,7 +42,7 @@ export default function () {
                 behavior: "smooth"
             })
         }
-    }, [recipe, ingredients, loading, mood])
+    }, [recipe, ingredients, loading, mood, cuisine])
 
     function handleSubmit(formData) {
         const newMood = formData.get("mood");
@@ -52,19 +53,28 @@ export default function () {
         if (newIngredient !== "") {
             setIngredients(prevIngredients => [...prevIngredients, newIngredient]);
         }
+        const newCuisine = formData.get("cuisine");
+        if (newCuisine !== "") {
+            console.log(newCuisine);
+            setCuisine(newCuisine);
+        }
+        setRecipe("");
     }
 
     async function handleClick() {
         setLoading(true);
         let recipeMarkdown = "";
         if (mood.length === 0) {
-            recipeMarkdown = await getRecipeFromIngredients(ingredients);
+            recipeMarkdown = await getRecipeFromIngredients(ingredients, cuisine);
         }
         else if (ingredients.length === 0) {
-            recipeMarkdown = await getRecipeFromMood(mood);
+            recipeMarkdown = await getRecipeFromMood(mood, cuisine);
+        }
+        else if (mood.length === 0 && ingredients.length === 0) {
+            recipeMarkdown = await getRecipeFromCuisine(cuisine);
         }
         else {
-            recipeMarkdown = await getRecipeFromMoodAndIngredients(mood, ingredients);
+            recipeMarkdown = await getRecipeFromMoodAndIngredients(mood, ingredients, cuisine)
         }
         setRecipe(recipeMarkdown);
         setLoading(false);
@@ -85,18 +95,18 @@ export default function () {
     return <>
         <main>
             <section className="description">
-                <div className="heading">Smart Recipes, Made Just for You</div>
+                <div className="heading">Recipes That Match Your Vibe!</div>
                 <div className="text">
                     <div className="content">
-                        Hungry but not sure what to make? Our Chef Claude turns your cravings, ingredients, and preferences into delicious ideas. Here is how it works:
+                        Craving comfort food on a rainy day? Feeling adventurous with a handful of exotic spices? Our smart recipe generator blends your ingredients, mood, and preferred cuisine into one delicious plan. Here's how the magic happens:
                     </div>
-                    <div className="sub-heading">- Tell Us What You have Got</div>
+                    <div className="sub-heading">- Share Your Pantry + Mood</div>
                     <div className="content">
-                        Input the ingredients you have at home(atleast 4) or tell us what you are in the mood for. Whether its spicy, vegan, low-carb, or indulgent—we have got it covered.
+                        Pop in the ingredients you have got on hand, or tell us what you want , spicy, vegan, indulgent, healthy—and choose a cuisine that excites you.
                     </div>
-                    <div className="sub-heading">- Let the AI Whip Up Magic</div>
+                    <div className="sub-heading">- AI in Apron Mode</div>
                     <div className="content">
-                        Using a blend of smart algorithms and culinary creativity, our AI whips up unique, well-balanced recipes in seconds. Its like having a personal chef with endless imagination.
+                        Our AI analyzes flavor profiles, cooking techniques, and your vibe to cook up recipes that feel tailor-made—whether it is a soothing bowl of dal or a feisty fusion taco.
                     </div>
                 </div>
             </section>
@@ -106,7 +116,7 @@ export default function () {
                         type="text"
                         list="ingredient-list"
                         aria-label="Add ingredients"
-                        placeholder="e.g. onion"
+                        placeholder="e.g. Onion"
                         name="ingredient"
                     />
                     <datalist id="ingredient-list">
@@ -126,19 +136,40 @@ export default function () {
                         type="text"
                         list="moods"
                         aria-label="What's your mood"
-                        placeholder="e.g. Feeling lazy"
+                        placeholder="e.g. Spicy"
                         name="mood"
                     />
                     <datalist id="moods">
-                        <option value="Happy"></option>
-                        <option value="Sad"></option>
-                        <option value="Lazy"></option>
-                        <option value="Adventurous"></option>
-                        <option value="Romantic"></option>
-                        <option value="Tired"></option>
-                        <option value="Energetic"></option>
+                        <option value="Gluten-Free"></option>
+                        <option value="Sweet Cravings"></option>
+                        <option value="Spicy"></option>
+                        <option value="Vegan"></option>
+                        <option value="Low-carb"></option>
+                        <option value="Indulgent"></option>
+                        <option value="Healthy"></option>
+                        <option value="High-Protein"></option>
                     </datalist>
                     <button>Add mood</button>
+                </div>
+
+                <div className="cuisine-input">
+                    <input
+                        type="text"
+                        list="cuisines"
+                        aria-label="Select Cuisine"
+                        placeholder="e.g. Chinese"
+                        name="cuisine"
+                    />
+                    <datalist id="cuisines">
+                        <option value="Italian"></option>
+                        <option value="Indian"></option>
+                        <option value="Mexican"></option>
+                        <option value="Chinese"></option>
+                        <option value="Thai"></option>
+                        <option value="Japanese"></option>
+                        <option value="French"></option>
+                    </datalist>
+                    <button>{cuisine === "" ? "+ Add cuisine" : "Change Cuisine"}</button>
                 </div>
             </form>
 
@@ -153,17 +184,23 @@ export default function () {
                     : ingredients.length >= 4 ?
                         <h4 ref={noOfIngredients}>
                             Click "Get a recipe" now
-                        </h4> :
-                        <h4 ref={noOfIngredients}>
-
                         </h4>
+                        : cuisine === "" ?
+                            <h4 ref={noOfIngredients}>
+                                Select a cuisine to start with!
+                            </h4>
+                            :
+                            <h4 ref={noOfIngredients}>
+                                Add your mood or ingredients if you want
+                            </h4>
             }
 
-            {(ingredients.length > 0 || mood.length > 0) &&
+            {(ingredients.length > 0 || mood.length > 0 || cuisine !== "") &&
                 <IngredientsList
                     ref={recipeSection}
                     listOfIngredients={ingredients}
                     listOfMoods={mood}
+                    cuisine={cuisine}
                     onClick={handleClick}
                     removeIngredient={removeIngredient}
                     removeMood={removeMood}
@@ -171,7 +208,13 @@ export default function () {
                 />
             }
 
-            {(recipe !== "" || loading) && <ClaudeRecipe generatedRecipe={recipe} loading={loading} ref={loadingSection} />}
+            {(recipe !== "" || loading) &&
+                <ClaudeRecipe
+                    generatedRecipe={recipe}
+                    loading={loading}
+                    ref={loadingSection}
+                />
+            }
         </main>
     </>
 }

@@ -2,7 +2,6 @@ export default function IngredientsList(props) {
     const ingredientsList = mapListItems(props.listOfIngredients, "ingredient");
     const moodList = mapListItems(props.listOfMoods, "mood");
 
-
     function mapListItems(list, type) {
         return list.map((item, index) => {
             const uniqueId = `${type}-${index}`
@@ -30,7 +29,7 @@ export default function IngredientsList(props) {
     }
 
     return <>
-        <section className="ingredients-mood-container">
+        <section className="input-list-container">
             <div className="box">
                 {ingredientsList.length > 0 && <div className="ingredients-container">
                     <h2>Ingredients on hand:</h2>
@@ -41,9 +40,16 @@ export default function IngredientsList(props) {
                     <h2>Your Mood:</h2>
                     <ul className="mood-list" aria-live="polite">{moodList}</ul>
                 </div>}
+
+                {props.cuisine !== "" && <div className="cuisine-container">
+                    <h2>Your Cuisine:</h2>
+                    <div className="item">
+                        {props.cuisine}
+                    </div>
+                </div>}
             </div>
 
-            {(ingredientsList.length > 3 || moodList.length > 0) && <div className="get-recipe-container">
+            {(ingredientsList.length > 3 || moodList.length > 0 || props.cuisine!=="") && <div className="get-recipe-container">
                 {props.recipe === "" ?
                     <div ref={props.ref}>
                         <h3>Ready for a recipe?</h3>

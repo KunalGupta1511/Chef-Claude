@@ -38,62 +38,80 @@ h4 {
 
 .add-ingredient-form {
     display: flex;
-    flex-direction: column;
     gap: 12px;
     height: fit-content;
     margin-top: 2rem;
 }
 
-.ingredient-input , .mood-input{
+.ingredient-input,
+.mood-input,
+.cuisine-input {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
     gap: 20px;
     flex-grow: 1;
 }
 
-.ingredient-input>input,.mood-input>input {
+.ingredient-input>input,
+.mood-input>input,
+.cuisine-input>input {
     border-radius: 6px;
     border: 1px solid #D1D5DB;
     padding: 9px 13px;
     box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
     flex-grow: 1;
-    min-width: 150px;
+    width: 100%;
+    min-width: 125px;
     max-width: 400px;
 }
 
-.ingredient-input>button ,.mood-input>button {
+.ingredient-input>button,
+.mood-input>button,
+.cuisine-input>button {
     font-family: Inter, sans-serif;
     border-radius: 6px;
     border: none;
     background-color: #141413;
     color: #FAFAF8;
-    width: 150px;
+    width: fit-content;
+    padding: 0.5rem 1.5rem;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
 }
 
-.ingredient-input>button::before, .mood-input>button::before {
+.ingredient-input>button::before,
+.mood-input>button::before {
     content: "+";
     margin-right: 5px;
 }
 
-.ingredients-mood-container {
+.input-list-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.box{
+.box {
     display: flex;
     gap: 50px;
 }
 
-ul.ingredients-list>.item , ul.mood-list>.item {
+ul.ingredients-list>.item,
+ul.mood-list>.item,
+.cuisine-container>.item {
     color: #475467;
     line-height: 28px;
     padding: 0.3rem;
+}
+
+.cuisine-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .item {
