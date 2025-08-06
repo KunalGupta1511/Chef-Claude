@@ -50,7 +50,7 @@ export default function IngredientsList(props) {
             </div>
 
             {(ingredientsList.length > 3 || moodList.length > 0 || props.cuisine!=="") && <div className="get-recipe-container">
-                {props.recipe === "" ?
+                {props.recipe.length === 0 ?
                     <div ref={props.ref}>
                         <h3>Ready for a recipe?</h3>
                         <p>Generate a recipe from your list of ingredients.</p>

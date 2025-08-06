@@ -2,33 +2,43 @@ import React, { useEffect } from "react"
 import IngredientsList from "./InputList";
 import ClaudeRecipe from "./ClaudeRecipe";
 import { getRecipeFromIngredients, getRecipeFromMood, getRecipeFromMoodAndIngredients, getRecipeFromCuisine } from "../getRecipeFromAI"
+import { changeRecipe } from "../changeRecipe";
 
 export default function () {
     const [ingredients, setIngredients] = React.useState([]);
     const [mood, setMood] = React.useState([]);
     const [cuisine, setCuisine] = React.useState("");
-    const [recipe, setRecipe] = React.useState("");
+    const [recipeList, setRecipeList] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState(false);
     const loadingSection = React.useRef(null);
     const recipeSection = React.useRef(null);
+    const changedRecipe = React.useRef(null);
     const noOfIngredients = React.useRef(null);
 
     useEffect(() => {
-        if (recipe !== "" && recipeSection.current !== null) {
+        if (recipeList.length !== 0 && recipeList.length <= 1 && recipeSection.current !== null) {
             const yCoord = recipeSection.current.getBoundingClientRect().top + window.scrollY - 80
             window.scroll({
                 top: yCoord,
                 behavior: "smooth"
             })
         }
-        if (ingredients.length <= 3 && recipe === "") {
+        if (recipeList.length > 1 && changedRecipe.current !== null) {
+            const yCoord = changedRecipe.current.getBoundingClientRect().top + window.scrollY - 80
+            window.scroll({
+                top: yCoord,
+                behavior: "smooth"
+            })
+        }
+        if (ingredients.length <= 3 && recipeList.length === 0) {
             const yCoord = noOfIngredients.current.getBoundingClientRect().top + window.scrollY
             window.scroll({
                 top: yCoord,
                 behavior: "smooth"
             })
         }
-        else if (ingredients.length >= 4 && recipe === "") {
+        else if (ingredients.length >= 4 && recipeList.length === 0) {
             const yCoord = recipeSection.current.getBoundingClientRect().top + window.scrollY
             window.scroll({
                 top: yCoord,
@@ -42,7 +52,7 @@ export default function () {
                 behavior: "smooth"
             })
         }
-    }, [recipe, ingredients, loading, mood, cuisine])
+    }, [recipeList, ingredients, loading, mood, cuisine])
 
     function handleSubmit(formData) {
         const newMood = formData.get("mood");
@@ -55,41 +65,81 @@ export default function () {
         }
         const newCuisine = formData.get("cuisine");
         if (newCuisine !== "") {
-            console.log(newCuisine);
             setCuisine(newCuisine);
         }
-        setRecipe("");
+        setRecipeList([]);
     }
 
-    async function handleClick() {
+    function handleComment(formData) {
+        const newComment = formData.get("comment");
+        if (newComment !== "") {
+            handleClick(newComment);
+        }
+    }
+
+    async function handleClick(newComment) {
         setLoading(true);
         let recipeMarkdown = "";
-        if (mood.length === 0) {
-            recipeMarkdown = await getRecipeFromIngredients(ingredients, cuisine);
+        if (newComment !== undefined) {
+            try {
+                recipeMarkdown = await changeRecipe(recipeList[recipeList.length - 1], newComment);
+                setError(false);
+            } catch (err) {
+                setError(true);
+            }
+
+        }
+        else if (mood.length === 0) {
+            try {
+                recipeMarkdown = await getRecipeFromIngredients(ingredients, cuisine);
+                setError(false);
+            }
+            catch (err) {
+                setError(true);
+            }
         }
         else if (ingredients.length === 0) {
-            recipeMarkdown = await getRecipeFromMood(mood, cuisine);
+            try {
+                recipeMarkdown = await getRecipeFromMood(mood, cuisine);
+                setError(false);
+            }
+            catch (err) {
+                setError(true);
+            }
         }
         else if (mood.length === 0 && ingredients.length === 0) {
-            recipeMarkdown = await getRecipeFromCuisine(cuisine);
+            try {
+                recipeMarkdown = await getRecipeFromCuisine(cuisine);
+                setError(false);
+            }
+            catch (err) {
+                setError(true);
+            }
         }
         else {
-            recipeMarkdown = await getRecipeFromMoodAndIngredients(mood, ingredients, cuisine)
+            try {
+                recipeMarkdown = await getRecipeFromMoodAndIngredients(mood, ingredients, cuisine);
+                setError(false);
+            }
+            catch (err) {
+                setError(true);
+            }
         }
-        setRecipe(recipeMarkdown);
+        console.log(recipeMarkdown);
+        setRecipeList(prev => [...prev, recipeMarkdown]);
         setLoading(false);
     }
 
     function removeIngredient(index) {
         const newIngredientList = ingredients.filter((item) => item !== ingredients[index]);
         setIngredients(newIngredientList);
-        setRecipe("");
+        setRecipeList([]);
     }
 
     function removeMood(index) {
         const newMood = mood.filter((item) => item !== mood[index]);
         setMood(newMood);
-        setRecipe("");
+        setRecipeList([]);
     }
 
     return <>
@@ -110,7 +160,7 @@ export default function () {
                     </div>
                 </div>
             </section>
-            <form className="add-ingredient-form" action={handleSubmit}>
+            <form className="add-content-form" action={handleSubmit}>
                 <div className="ingredient-input">
                     <input
                         type="text"
@@ -177,22 +227,25 @@ export default function () {
                 <h4 ref={noOfIngredients}>
                     Get a recipe now {ingredients.length < 4 && `or Add ${4 - ingredients.length} ingredients`}
                 </h4>
-                : (ingredients.length <= 3 && ingredients.length > 0) ?
+                : 
+                (ingredients.length <= 3 && ingredients.length > 0) ?
                     <h4 ref={noOfIngredients}>
                         Add {4 - ingredients.length} more ingredients to get a recipe now
                     </h4>
-                    : ingredients.length >= 4 ?
-                        <h4 ref={noOfIngredients}>
-                            Click "Get a recipe" now
-                        </h4>
-                        : cuisine === "" ?
-                            <h4 ref={noOfIngredients}>
-                                Select a cuisine to start with!
-                            </h4>
-                            :
-                            <h4 ref={noOfIngredients}>
-                                Add your mood or ingredients if you want
-                            </h4>
+                : 
+                ingredients.length >= 4 ?
+                    <h4 ref={noOfIngredients}>
+                        Click "Get a recipe" now
+                    </h4>
+                : 
+                cuisine === "" ?
+                    <h4 ref={noOfIngredients}>
+                        Select a cuisine to start with!
+                    </h4>
+                :
+                <h4 ref={noOfIngredients}>
+                    Add your mood or ingredients if you want
+                </h4>
             }
 
             {(ingredients.length > 0 || mood.length > 0 || cuisine !== "") &&
@@ -204,17 +257,43 @@ export default function () {
                     onClick={handleClick}
                     removeIngredient={removeIngredient}
                     removeMood={removeMood}
-                    recipe={recipe}
+                    recipe={recipeList}
                 />
             }
 
-            {(recipe !== "" || loading) &&
+            {recipeList.length !== 0 ? recipeList.map((r, index) => (
                 <ClaudeRecipe
-                    generatedRecipe={recipe}
+                    key={index}
+                    generatedRecipe={r}
+                    error = {error}
                     loading={loading}
-                    ref={loadingSection}
+                    ref1={changedRecipe}
+                    ref2={loadingSection}
                 />
-            }
+            )) : <ClaudeRecipe
+                generatedRecipe={null}
+                loading={loading}
+                error = {error}
+                ref1={changedRecipe}
+                ref2={loadingSection}
+            />}
+
+
+            {(recipeList.length !== 0 && !loading) ? <div className="change-recipe">
+                <h3>Not Feeling This Dish?</h3>
+                <h4>No worries—your perfect recipe is just a tweak away!
+                    Tell us what’s missing or what you’d like to change:
+                </h4>
+                <form className="add-comment-form" action={handleComment}>
+                    <input
+                        type="text"
+                        className="comment-input"
+                        placeholder='e.g. Make it spicier'
+                        name='comment'
+                    />
+                    <button>Get a new recipe</button>
+                </form>
+            </div> : null}
         </main>
     </>
 }
