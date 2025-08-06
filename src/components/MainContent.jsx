@@ -125,7 +125,6 @@ export default function () {
                 setError(true);
             }
         }
-        console.log(recipeMarkdown);
         setRecipeList(prev => [...prev, recipeMarkdown]);
         setLoading(false);
     }
@@ -280,8 +279,7 @@ export default function () {
 
 
             {(recipeList.length !== 0 && !loading) ? <div className="change-recipe">
-                <h3>Not Feeling This Dish?</h3>
-                <h4>No worries—your perfect recipe is just a tweak away!
+                <h4>
                     Tell us what’s missing or what you’d like to change:
                 </h4>
                 <form className="add-comment-form" action={handleComment}>
