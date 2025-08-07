@@ -1,15 +1,23 @@
 import ReactMarkdown from 'react-markdown';
 
 export default function ClaudeRecipe(props) {
+    console.log(props.error);
     return <>
         <section>
-            {props.generatedRecipe &&
-                <div className="recipe" ref={props.ref1}>
-                    <h2>Chef Claude Recommends:</h2>
-                    <article className="suggested-recipe-container" aria-live="polite">
-                        <ReactMarkdown>{props.generatedRecipe}</ReactMarkdown>
-                    </article>
-                </div>
+            {props.generatedRecipe !== null &&
+                <>
+                    <div className="recipe" ref={props.ref1}>
+                        <h2>Chef Claude Recommends:</h2>
+                        <article className="suggested-recipe-container" aria-live="polite">
+                            <ReactMarkdown>{props.generatedRecipe}</ReactMarkdown>
+                        </article>
+                    </div>
+                    <div className="chats">
+                        {props.chatHistory.map((item,idx)=>{
+                            <span key={idx}>{item}</span>
+                        })}
+                    </div>
+                </>
             }
             {props.loading &&
                 <div className="loading" ref={props.ref2}>

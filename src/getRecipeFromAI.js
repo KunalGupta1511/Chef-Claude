@@ -72,7 +72,8 @@ export async function getRecipeFromIngredients(ingredientsArr,cuisine) {
         })
         return response.choices[0].message.content
     } catch (err) {
-        console.error(err.message)
+        console.error(err.message);
+        return true;
     }
 }
 
@@ -89,7 +90,8 @@ export async function getRecipeFromMood(moodArr,cuisine) {
         })
         return response.choices[0].message.content
     } catch (err) {
-        console.error(err.message)
+        console.error(err.message);
+        return true;
     }
 }
 
@@ -107,7 +109,8 @@ export async function getRecipeFromMoodAndIngredients(moodArr, ingredientsArr,cu
         })
         return response.choices[0].message.content
     } catch (err) {
-        console.error(err.message)
+        console.error(err.message);
+        return true;
     }
 }
 
@@ -123,6 +126,7 @@ export async function getRecipeFromCuisine(cuisine) {
         })
         return response.choices[0].message.content
     } catch (err) {
-        console.error(err.message)
+        console.error(err.message);
+        return true;
     }
 }

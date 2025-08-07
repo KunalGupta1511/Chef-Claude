@@ -9,6 +9,7 @@ export default function () {
     const [mood, setMood] = React.useState([]);
     const [cuisine, setCuisine] = React.useState("");
     const [recipeList, setRecipeList] = React.useState([]);
+    const [chatHistory , setChatHistory] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(false);
     const loadingSection = React.useRef(null);
@@ -73,6 +74,7 @@ export default function () {
     function handleComment(formData) {
         const newComment = formData.get("comment");
         if (newComment !== "") {
+            setChatHistory(prev => [...prev , newComment])
             handleClick(newComment);
         }
     }
@@ -82,7 +84,7 @@ export default function () {
         let recipeMarkdown = "";
         if (newComment !== undefined) {
             try {
-                recipeMarkdown = await changeRecipe(recipeList[recipeList.length - 1], newComment);
+                recipeMarkdown = await changeRecipe(recipeList[recipeList.length - 1], newComment, chatHistory);
                 setError(false);
             } catch (err) {
                 setError(true);
@@ -265,17 +267,20 @@ export default function () {
                     key={index}
                     generatedRecipe={r}
                     error = {error}
+                    chatHistory= {chatHistory}
                     loading={loading}
                     ref1={changedRecipe}
                     ref2={loadingSection}
                 />
-            )) : <ClaudeRecipe
-                generatedRecipe={null}
-                loading={loading}
-                error = {error}
-                ref1={changedRecipe}
-                ref2={loadingSection}
-            />}
+            )) : 
+                <ClaudeRecipe
+                    generatedRecipe={null}
+                    loading={loading}
+                    error = {error}
+                    ref1={changedRecipe}
+                    ref2={loadingSection}
+                />
+            }
 
 
             {(recipeList.length !== 0 && !loading) ? <div className="change-recipe">
